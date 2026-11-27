@@ -1,0 +1,107 @@
+{
+  "info": {
+    "name": "spring-jwt",
+    "description": "Endpoints for the Spring Security JWT demo. Run \"Get Token\" first; it saves the token into the {{token}} collection variable.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Get Token (login)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// The endpoint returns the raw JWT as plain text",
+              "const token = pm.response.text().trim();",
+              "pm.collectionVariables.set('token', token);",
+              "",
+              "pm.test('Token looks like a JWT', function () {",
+              "    pm.expect(token.split('.')).to.have.lengthOf(3);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"password\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/token",
+          "host": ["{{baseUrl}}"],
+          "path": ["token"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Hello (protected)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            { "key": "token", "value": "{{token}}", "type": "string" }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/hello",
+          "host": ["{{baseUrl}}"],
+          "path": ["hello"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Hello (no token, expect 401)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": { "type": "noauth" },
+        "url": {
+          "raw": "{{baseUrl}}/hello",
+          "host": ["{{baseUrl}}"],
+          "path": ["hello"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Token (wrong password, expect 401)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"wrong\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/token",
+          "host": ["{{baseUrl}}"],
+          "path": ["token"]
+        }
+      },
+      "response": []
+    }
+  ]
+}
